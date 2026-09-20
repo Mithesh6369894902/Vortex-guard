@@ -1,0 +1,77 @@
+# ---------------------------------------------------------------------------
+# VertexGuard — production topology
+#
+#    nginx (web) ──/api,/ws──▶ api (Node 24) ──▶ postgres 16
+#
+#   db    : PostgreSQL 16 warehouse (schema + seeded retail data)
+#   seed  : one-shot job that builds the warehouse if it is empty
+#   api   : Guardian pipeline + REST + WebSocket + audit store
+#   web   : static React SPA behind Nginx, proxying /api and /ws
+# ---------------------------------------------------------------------------
+services:
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-vertexguard}
+      POSTGRES_USER: ${POSTGRES_USER:-vg}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vg_secret}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vg} -d ${POSTGRES_DB:-vertexguard}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+
+  seed:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-vg}:${POSTGRES_PASSWORD:-vg_secret}@db:5432/${POSTGRES_DB:-vertexguard}
+      SEED_SMALL: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+    # Idempotent seeder: skips when data already present.
+    command: npm run seed
+    restart: "no"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-vg}:${POSTGRES_PASSWORD:-vg_secret}@db:5432/${POSTGRES_DB:-vertexguard}
+      PORT: "4100"
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:8080}
+      LLM_ENGINE: mock
+    ports:
+      - "4100:4100"
+    volumes:
+      - vgdata:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:4100/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  vgdata:
