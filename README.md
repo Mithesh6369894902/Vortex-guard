@@ -21,23 +21,23 @@
 
 ---
 
-## ⚡ Executive Summary
+##  Executive Summary
 
 Enterprise adoption of **Natural Language to SQL (NL-to-SQL)** and **GenAI Data Assistants** fails for two primary reasons:
 
-1. 🕳️ **The Silent Failure Trap:** Large Language Models produce *confident, plausible-looking* numbers that are subtly wrong (e.g., cancelled order leaks, refund double-counts, wrong date windows, and unit mismatch bugs). Because the SQL executes without syntax errors, executives make million-dollar decisions on corrupted data.
-2. 🔓 **The Data Governance Trap:** Generative models lack granular data boundary awareness, freely exposing raw customer PII (Emails, Phone Numbers, Aadhaar/SSN) or querying restricted financial and payment tables.
+1.  **The Silent Failure Trap:** Large Language Models produce *confident, plausible-looking* numbers that are subtly wrong (e.g., cancelled order leaks, refund double-counts, wrong date windows, and unit mismatch bugs). Because the SQL executes without syntax errors, executives make million-dollar decisions on corrupted data.
+2.  **The Data Governance Trap:** Generative models lack granular data boundary awareness, freely exposing raw customer PII (Emails, Phone Numbers, Aadhaar/SSN) or querying restricted financial and payment tables.
 
 **VertexGuard** eliminates both risks by placing an **autonomous 8-stage verification shield** between natural language prompts and data consumers. Every answer is **semantically verified against independent ground truth**, **statistically audited for anomalies**, **scanned for governance violations**, and sealed with a **cryptographic SHA-256 audit anchor**.
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ```mermaid
 flowchart TD
-    User([👤 User / Business Stakeholder]) -->|Natural Language Query| WebUI["🖥️ React + Vite Web Client\n(Live Stage Stream via WebSocket)"]
-    WebUI -->|POST /api/analyze| APIGateway["⚡ Express API Gateway"]
+    User([👤 User / Business Stakeholder]) -->|Natural Language Query| WebUI[" React + Vite Web Client\n(Live Stage Stream via WebSocket)"]
+    WebUI -->|POST /api/analyze| APIGateway[" Express API Gateway"]
 
     subgraph GuardianEngine ["🛡️ VertexGuard 8-Stage Pipeline"]
         direction TB
@@ -54,16 +54,16 @@ flowchart TD
     end
 
     APIGateway --> GuardianEngine
-    GuardianEngine <-->|Zero-Install WASM / Cloud PG| DB[("🗄️ PostgreSQL Data Warehouse\n(PGlite WASM / Amazon RDS / Cloud SQL)")]
-    GuardianEngine -->|Real-time Stage Events| WSRelay["📡 WebSocket Event Relay (/ws)"]
+    GuardianEngine <-->|Zero-Install WASM / Cloud PG| DB[(" PostgreSQL Data Warehouse\n(PGlite WASM / Amazon RDS / Cloud SQL)")]
+    GuardianEngine -->|Real-time Stage Events| WSRelay[" WebSocket Event Relay (/ws)"]
     WSRelay -->|Live Progress & Metrics| WebUI
-    S8 -->|Immutable Trail| AuditStore[("📜 Audit Ledger Store")]
+    S8 -->|Immutable Trail| AuditStore[(" Audit Ledger Store")]
     S7 -->|Verified/Warn/Rejected Report| WebUI
 ```
 
 ---
 
-## ⚙️ The 8-Stage Guardian Pipeline
+##  The 8-Stage Guardian Pipeline
 
 | Stage | Name | Description & Action | Failure Protection |
 | :---: | :--- | :--- | :--- |
@@ -78,7 +78,7 @@ flowchart TD
 
 ---
 
-## 🎯 Trust Scoring Formula
+##  Trust Scoring Formula
 
 $$\text{Base Score} = \max(0,\, 100 - 30 \times N_{\text{critical}} - 10 \times N_{\text{warnings}})$$
 
@@ -90,17 +90,17 @@ $$\text{Bonus} = +6 \quad \text{if all claims pass independent verification}$$
 
 ---
 
-## 🌟 Core Capabilities
+##  Core Capabilities
 
-### 1. 🔍 Independent Semantic Verification
+### 1.  Independent Semantic Verification
 Models are often confident when wrong. VertexGuard never relies on LLM self-confidence. Instead, an independent verifier runs orthogonal SQL queries against the raw warehouse tables to verify every quantitative claim made in the natural language summary.
 
-### 2. 🎭 Role-Based Governance & Automated PII Masking
+### 2.  Role-Based Governance & Automated PII Masking
 - **Analyst Persona:** Access to granular operational metrics with automatic masking for emails, phone numbers, and identity numbers.
 - **Executive Persona:** Aggregated executive dashboards with restricted access to low-level raw customer tables.
 - **Dynamic PII Masking:** Regex-driven redaction for Aadhaar, SSN, Credit Cards, and Email addresses.
 
-### 3. 🧪 Production Failure Taxonomy Replay
+### 3.  Production Failure Taxonomy Replay
 Built-in deterministic test suite simulating real-world enterprise LLM failure modes:
 - **Syndrome A (Unit Multiplier Error):** Catches $\times 10$ quantity bugs ($\Delta 900\%$).
 - **Syndrome B (Cancelled Order Leak):** Flags missing `status != 'cancelled'` filters.
@@ -114,21 +114,21 @@ Instant keyboard-driven control to trigger sample queries, toggle analyst/execut
 
 ---
 
-## 📸 Visual Walkthrough & Screenshots
+##  Visual Walkthrough & Screenshots
 
 | 🟢 Real-Time Verified Proof | 🔴 Anomaly Detection & Rejection |
 | :---: | :---: |
 | ![Verified Query](screenshots/2_verified_query.png) | ![Rejected Query](screenshots/3_rejected_anomaly.png) |
 | *8-Stage pipeline passing with 98/100 Trust Score and independent SQL proof.* | *Automatic rejection of metric drift and refund double-counting.* |
 
-| 🛡️ Governance & RBAC Policy Matrix | 📜 Immutable SHA-256 Audit Trail |
+|  Governance & RBAC Policy Matrix |  Immutable SHA-256 Audit Trail |
 | :---: | :---: |
 | ![Governance Matrix](screenshots/4_governance_matrix.png) | ![Audit Trail](screenshots/5_audit_trail.png) |
 | *Role-based column access control and PII redaction settings.* | *Forensic ledger with cryptographic hashes for SOC2/ISO compliance.* |
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - **Node.js:** `v20.0.0` or higher
@@ -152,13 +152,13 @@ npm run seed
 ```bash
 npm run dev
 ```
-- 🖥️ **Web Application:** [http://localhost:4200](http://localhost:4200)
-- ⚡ **API Gateway:** [http://localhost:4100](http://localhost:4100)
-- 📡 **WebSocket Relay:** `ws://localhost:4100/ws`
+-  **Web Application:** [http://localhost:4200](http://localhost:4200)
+-  **API Gateway:** [http://localhost:4100](http://localhost:4100)
+-  **WebSocket Relay:** `ws://localhost:4100/ws`
 
 ---
 
-## 🔌 API Specification
+##  API Specification
 
 ### `POST /api/analyze`
 Submits a natural language query for full 8-stage verification.
